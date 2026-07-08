@@ -178,12 +178,12 @@ SSH key coowin is generated.
 
 | 项目 | 值 |
 |---|---|
-| Hostname | `gcam1204.siteground.biz` |
-| Username | `u2574-vu6qtl90ekm6` |
+| Hostname | `gcam1200.siteground.biz` |
+| Username | `u2500-vu6qtl90ekm6` |
 | Port | `18765` |
 | Key Name | `coowin` |
 | Passphrase | `1a@2b@3c@4d` |
-| Domain | `shangyuan-tanzania.com` |
+| Domain | `coowin.com` |
 
 这几个信息后面会用于 SSH 登录。
 
@@ -196,13 +196,13 @@ ssh -i "本地私钥路径" -p 端口号 用户名@主机名
 本次测试对应命令是：
 
 ```powershell
-ssh -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2574-vu6qtl90ekm6@gcam1204.siteground.biz
+ssh -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2500-vu6qtl90ekm6@gcam1200.siteground.biz
 ```
 
 实际测试中，为了避免 Windows 本地其他 SSH Key 干扰，最终使用了更稳定的命令：
 
 ```powershell
-ssh -o IdentitiesOnly=yes -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2574-vu6qtl90ekm6@gcam1204.siteground.biz
+ssh -o IdentitiesOnly=yes -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2500-vu6qtl90ekm6@gcam1200.siteground.biz
 ```
 
 ---
@@ -275,13 +275,13 @@ Download Private Key
 |---|---|
 | SiteGround SSH Key Name | `coowin` |
 | SSH Key Passphrase | `1a@2b@3c@4d` |
-| Hostname | `gcam1204.siteground.biz` |
-| Username | `u2574-vu6qtl90ekm6` |
+| Hostname | `gcam1200.siteground.biz` |
+| Username | `u2500-vu6qtl90ekm6` |
 | Port | `18765` |
 | 本地私钥文件名 | `siteground_coowin` |
 | 本地私钥路径 | `C:\Users\Administrator\.ssh\siteground_coowin` |
-| 网站域名 | `shangyuan-tanzania.com` |
-| 网站根目录 | `~/www/shangyuan-tanzania.com/public_html` |
+| 网站域名 | `coowin.com` |
+| 网站根目录 | `~/www/coowin.com/public_html` |
 
 ---
 
@@ -400,7 +400,7 @@ True
 本次测试主机使用的登录命令是：
 
 ```powershell
-ssh -o IdentitiesOnly=yes -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2574-vu6qtl90ekm6@gcam1204.siteground.biz
+ssh -o IdentitiesOnly=yes -i "$env:USERPROFILE\.ssh\siteground_coowin" -p 18765 u2500-vu6qtl90ekm6@gcam1200.siteground.biz
 ```
 
 执行后会提示输入：
