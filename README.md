@@ -10,11 +10,12 @@
 - 本地备份恢复到 SiteGround；
 - MySQL 与 SQLite 项目的备份区别；
 - SCP 下载 / 上传、SHA256 完整性校验；
+- 实际验证过的命令对照记录；
 - 常见 SSH、路径与命令环境错误排查。
 
 本仓库的目标不是堆积命令，而是形成一套 **可复用、可验证、可恢复、可长期维护的 SiteGround 运维 SOP**。
 
-> 安全提醒：公开仓库只使用占位符。不要提交 SSH Private Key、Passphrase、数据库密码、WordPress 管理员密码、API Key、SMTP 密码等生产凭证。
+> 安全提醒：公开仓库不要提交 SSH Private Key、Passphrase、数据库密码、WordPress 管理员密码、API Key、SMTP 密码等生产凭证。实操记录可以保留域名、日期、目录和文件名等有助于复盘的信息，但账号和密码类信息建议继续使用占位符。
 
 ---
 
@@ -76,6 +77,25 @@ Windows OpenSSH
 → 前后台验收
 → 清理临时文件
 ```
+
+### 4. 本次实操命令对照记录
+
+适合以后回看本次真实操作，把“通用命令中的占位符”和“实际使用时的命令形式”对应起来。
+
+👉 [docs/verified-command-log.md](docs/verified-command-log.md)
+
+主要内容：
+
+```text
+通用 SSH 命令 ↔ 本次 SSH 命令形式
+通用 tar 命令 ↔ 本次源码打包命令
+通用 mysqldump ↔ 本次数据库导出命令
+通用 SCP ↔ 本次 Windows 下载命令
+通用 SHA256 ↔ 本次完整性校验命令
+通用清理命令 ↔ 本次 tmp 清理命令
+```
+
+这份文档重点保留已经验证过的真实目录、域名、日期和文件命名方式，但不记录数据库密码、Private Key、Passphrase 等敏感凭证。
 
 ---
 
@@ -412,7 +432,7 @@ PS C:\...>
 
 ## 安全规范
 
-公开仓库统一使用：
+标准教程统一使用：
 
 ```text
 <SSH_HOST>
@@ -425,16 +445,16 @@ PS C:\...>
 YYYY-MM-DD
 ```
 
-不要提交：
+实操记录可以保留便于复盘的域名、端口、目录、日期和文件名，但不要提交：
 
 ```text
 SSH Private Key
 SSH Passphrase
 数据库密码
 WordPress 管理员密码
-真实生产凭证
 API Key
 SMTP 密码
+其他仍然有效的认证秘密
 ```
 
 如果历史提交曾经包含真实密码或密钥，不要只修改 README；还应及时轮换对应凭证，并根据需要清理 Git 历史。
@@ -449,7 +469,8 @@ siteground-ssh-wordpress-guide/
 └── docs/
     ├── ssh-wordpress-install.md
     ├── siteground-backup-guide.md
-    └── siteground-restore-guide.md
+    ├── siteground-restore-guide.md
+    └── verified-command-log.md
 ```
 
 后续如果内容继续增加，可以继续拆分：
@@ -459,6 +480,7 @@ docs/
 ├── ssh-wordpress-install.md
 ├── siteground-backup-guide.md
 ├── siteground-restore-guide.md
+├── verified-command-log.md
 ├── common-errors.md
 └── command-cheatsheet.md
 ```
@@ -499,6 +521,7 @@ SSH
 手动备份负责关键节点
 本地完整备份负责灾备与迁移
 恢复流程负责真正闭环
+实操记录负责以后快速复盘
 ```
 
 以及：
