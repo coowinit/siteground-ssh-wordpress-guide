@@ -7,11 +7,12 @@
 - SiteGround 网站目录结构；
 - WP-CLI 安装 WordPress；
 - WordPress / PHP 网站的完整本地备份；
+- 本地备份恢复到 SiteGround；
 - MySQL 与 SQLite 项目的备份区别；
-- SCP 下载、SHA256 完整性校验；
+- SCP 下载 / 上传、SHA256 完整性校验；
 - 常见 SSH、路径与命令环境错误排查。
 
-本仓库的目标不是堆积命令，而是形成一套 **可复用、可验证、可长期维护的 SiteGround 运维 SOP**。
+本仓库的目标不是堆积命令，而是形成一套 **可复用、可验证、可恢复、可长期维护的 SiteGround 运维 SOP**。
 
 > 安全提醒：公开仓库只使用占位符。不要提交 SSH Private Key、Passphrase、数据库密码、WordPress 管理员密码、API Key、SMTP 密码等生产凭证。
 
@@ -54,6 +55,26 @@ Windows OpenSSH
 → 本地验证
 → SHA256 对比
 → 清理服务器临时备份
+```
+
+### 3. SiteGround 网站恢复
+
+适合把自己的 `tar.gz + sql.gz` 本地备份恢复到 SiteGround，或用于迁移和灾难恢复。
+
+👉 [docs/siteground-restore-guide.md](docs/siteground-restore-guide.md)
+
+主要内容：
+
+```text
+检查备份
+→ 恢复前再备份当前状态
+→ SCP 上传
+→ 保留旧 public_html
+→ 解压源码
+→ 导入 MySQL / 恢复 SQLite
+→ 检查 URL 与配置
+→ 前后台验收
+→ 清理临时文件
 ```
 
 ---
@@ -108,6 +129,33 @@ public_html/database/app.sqlite
 ```
 
 整站打包 `public_html` 时通常已经一起备份。
+
+---
+
+## 备份与恢复必须形成闭环
+
+只会备份还不够。
+
+推荐把整个流程理解为：
+
+```text
+备份
+→ 验证
+→ 下载
+→ 保存
+→ 恢复
+→ 验收
+```
+
+真正可靠的备份应该同时满足：
+
+```text
+知道备份在哪里
+知道里面有什么
+知道文件没有损坏
+知道如何恢复
+知道恢复后如何验收
+```
 
 ---
 
@@ -176,13 +224,15 @@ ls
 cd
 tar
 gzip
+gunzip
 mysqldump
+mysql
 sha256sum
 ```
 
 记忆：
 
-> **服务器负责生成备份，Windows 负责把备份拿回来。**
+> **服务器负责生成和恢复，Windows 负责保存和传输备份。**
 
 ---
 
@@ -246,6 +296,41 @@ public_html/
 ```
 
 这样可以避免“文件看起来存在，但实际损坏或传输不完整”的情况。
+
+---
+
+## 恢复时优先保留旧数据
+
+恢复操作比备份风险更高。
+
+推荐原则：
+
+```text
+能改名保留，就先不要删除
+能导入新数据库，就先不要覆盖旧数据库
+```
+
+例如恢复源码时，优先：
+
+```bash
+mv public_html public_html-before-restore-YYYY-MM-DD
+```
+
+而不是直接：
+
+```bash
+rm -rf public_html
+```
+
+数据库也优先考虑：
+
+```text
+创建新空数据库
+→ 导入备份
+→ 修改配置文件
+```
+
+确认稳定后，再清理旧数据。
 
 ---
 
@@ -317,6 +402,12 @@ PS C:\...>
 
 下载并验证完成后再清理自己生成的临时文件。
 
+### 为什么恢复时不要立即删除旧 `public_html`？
+
+因为一旦恢复包、数据库或配置判断错误，旧站文件就是最后的回退机会。
+
+优先改名保留，确认恢复版本正常后再删除。
+
 ---
 
 ## 安全规范
@@ -357,7 +448,8 @@ siteground-ssh-wordpress-guide/
 ├── README.md
 └── docs/
     ├── ssh-wordpress-install.md
-    └── siteground-backup-guide.md
+    ├── siteground-backup-guide.md
+    └── siteground-restore-guide.md
 ```
 
 后续如果内容继续增加，可以继续拆分：
@@ -366,7 +458,7 @@ siteground-ssh-wordpress-guide/
 docs/
 ├── ssh-wordpress-install.md
 ├── siteground-backup-guide.md
-├── wordpress-migration.md
+├── siteground-restore-guide.md
 ├── common-errors.md
 └── command-cheatsheet.md
 ```
@@ -377,7 +469,7 @@ docs/
 
 ## 后续方向
 
-在手工备份流程稳定之后，可以再做 PowerShell 自动化：
+在手工备份和恢复流程稳定之后，可以再做 PowerShell 自动化：
 
 ```powershell
 .\backup-site.ps1 example.com
@@ -396,16 +488,17 @@ SSH
 → 清理临时文件
 ```
 
-自动化之前，建议先确保手工流程完全理解并实际验证过。
+恢复流程暂时建议保持手工执行，因为恢复涉及覆盖数据，风险明显高于备份自动化。
 
 ---
 
 ## 最终原则
 
 ```text
-平台自动备份负责恢复
+平台自动备份负责快速恢复
 手动备份负责关键节点
 本地完整备份负责灾备与迁移
+恢复流程负责真正闭环
 ```
 
 以及：
