@@ -66,7 +66,7 @@ SiteGround 自动备份
 
 其中 SiteGround 后台恢复菜单已经使用实际截图记录：
 
-![SiteGround Backup Restore Options](screenshots/siteground-backup-restore-options.png)
+![SiteGround Backup Restore Options](screenshots/siteground-backup-restore.png)
 
 ### 3. SiteGround 网站恢复
 
@@ -534,7 +534,7 @@ siteground-ssh-wordpress-guide/
 │   ├── siteground-restore-guide.md
 │   └── verified-command-log.md
 └── screenshots/
-    └── siteground-backup-restore-options.png
+    └── siteground-backup-restore.png
 ```
 
 当前结构刻意保持简单：
