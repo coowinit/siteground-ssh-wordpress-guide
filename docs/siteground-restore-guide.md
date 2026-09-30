@@ -18,6 +18,8 @@
 
 > 原则：恢复操作比备份操作风险更高。正式恢复前，先确认当前站点是否还需要保留，并优先再做一次现状备份。
 
+如果使用 SiteGround 自带恢复点，请先阅读：[SiteGround 网站完整备份指南：自动备份与后台恢复机制](siteground-backup-guide.md)。
+
 ---
 
 ## 1. 恢复前先判断场景
@@ -26,11 +28,16 @@
 
 | 场景 | 建议 |
 |---|---|
-| 原站还能访问，只是代码改坏 | 优先恢复文件或 SiteGround 恢复点 |
-| 网站文件和数据库都损坏 | 做完整恢复 |
+| 原站还能访问，只是代码、主题或插件文件改坏 | 优先使用 `Restore Files` 或恢复自己的文件备份 |
+| 文章、设置、用户、询盘等数据库数据误改 | 优先判断是否只需要 `Restore Databases` |
+| 网站文件和数据库都损坏 | 才考虑完整恢复 |
 | 迁移到新的 SiteGround 站点 | 按完整恢复流程执行 |
 
 如果只是某个插件、主题或单个文件出错，不建议直接覆盖整站。
+
+核心原则：
+
+> **能局部恢复，就不要优先整体恢复。**
 
 ---
 
@@ -80,20 +87,41 @@ manual-before-restore-YYYY-MM-DD
 
 ### 方法 A：SiteGround 后台恢复
 
-如果目标只是回到 SiteGround 的自动备份或手动备份点，优先使用：
+如果目标是回到 SiteGround 的自动备份或手动备份点，可以进入：
 
 ```text
 Site Tools
 → Security
 → Backups
-→ Restore
+→ 选择恢复点
+→ 打开操作菜单
 ```
 
-优点：简单、快、风险低。
+然后根据故障范围选择：
+
+```text
+Restore Files
+Restore Databases
+Restore Emails
+Restore All Files and Databases
+```
+
+SiteGround 后台恢复的优点是操作方便、速度快，但**风险取决于恢复范围**。特别是 `Restore All Files and Databases` 会同时影响文件与数据库，不应该因为操作简单就默认选择整体恢复。
+
+选择原则：
+
+```text
+文件问题       → Restore Files
+数据库问题     → Restore Databases
+邮箱问题       → Restore Emails
+文件+数据库问题 → Restore All Files and Databases
+```
+
+> 后台恢复菜单截图与各选项的底层含义，见 [SiteGround 网站完整备份指南](siteground-backup-guide.md)。
 
 ### 方法 B：使用自己的本地备份恢复
 
-本文重点讲这一种：
+本文后续重点讲这一种：
 
 ```text
 Windows 本地备份
@@ -272,6 +300,8 @@ find public_html -type f \( -name "*.sqlite" -o -name "*.db" \)
 ```
 
 如果 SQLite 文件放在 `public_html` 之外，则需要单独恢复对应目录。
+
+> SQLite 是文件数据库，所以在 SiteGround 后台通常应从“文件恢复”的角度理解，而不是把它等同于 MySQL 的 `Restore Databases`。
 
 ---
 
@@ -596,7 +626,7 @@ DROP TABLE
 
 推荐原则：
 
-> 能改名保留，就先不要删除；能导入新数据库，就先不要覆盖旧数据库。
+> 能改名保留，就先不要删除；能导入新数据库，就先不要覆盖旧数据库；能局部恢复，就先不要整体恢复。
 
 ---
 
@@ -626,10 +656,12 @@ SEO 层：Canonical、robots、Sitemap 没有异常
 → 验证
 → 下载
 → 保存
+→ 判断故障层
+→ 选择最小恢复范围
 → 恢复
 → 验收
 ```
 
 真正可靠的备份，不是“有一个压缩包”，而是：
 
-> 知道它里面有什么、知道它是否完整、知道如何恢复、并且实际验证过恢复流程。
+> 知道它里面有什么、知道它是否完整、知道什么时候该恢复文件或数据库、知道如何恢复，并且实际验证过恢复流程。
