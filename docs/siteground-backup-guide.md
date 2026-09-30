@@ -50,7 +50,7 @@ Site Tools
 
 下面是实际 SiteGround 后台中的恢复菜单：
 
-![SiteGround Backup Restore Options](../screenshots/siteground-backup-restore-options.png)
+![SiteGround Backup Restore Options](../screenshots/siteground-backup-restore.png)
 
 ### 2.1 截图中的五个选项分别是什么
 
