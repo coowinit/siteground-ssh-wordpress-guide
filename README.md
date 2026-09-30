@@ -6,6 +6,8 @@
 - SSH Key 与 Private Key 的正确使用；
 - SiteGround 网站目录结构；
 - WP-CLI 安装 WordPress；
+- SiteGround 自动备份与后台恢复机制；
+- `Restore Files / Databases / Emails / All` 的恢复范围区别；
 - WordPress / PHP 网站的完整本地备份；
 - 本地备份恢复到 SiteGround；
 - MySQL 与 SQLite 项目的备份区别；
@@ -40,16 +42,20 @@ Windows OpenSSH
 → 初始化 WordPress
 ```
 
-### 2. SiteGround 网站完整备份
+### 2. SiteGround 网站完整备份与后台恢复机制
 
-适合 WordPress、PHP + MySQL、PHP + SQLite 项目做本地独立备份。
+适合 WordPress、PHP + MySQL、PHP + SQLite 项目做本地独立备份，同时理解 SiteGround 自动备份与后台恢复的工作方式。
 
 👉 [docs/siteground-backup-guide.md](docs/siteground-backup-guide.md)
 
 主要内容：
 
 ```text
-打包 public_html
+SiteGround 自动备份
+→ Restore Files / Databases / Emails / All
+→ 判断故障层
+→ 选择最小恢复范围
+→ 打包 public_html
 → mysqldump 导出 MySQL
 → gzip 压缩
 → SCP 下载到 Windows
@@ -57,6 +63,10 @@ Windows OpenSSH
 → SHA256 对比
 → 清理服务器临时备份
 ```
+
+其中 SiteGround 后台恢复菜单已经使用实际截图记录：
+
+![SiteGround Backup Restore Options](screenshots/siteground-backup-restore-options.png)
 
 ### 3. SiteGround 网站恢复
 
@@ -119,6 +129,46 @@ SiteGround 网站建议同时保留三层备份：
 
 ---
 
+## SiteGround 后台恢复：先判断，再恢复
+
+SiteGround 后台常见恢复选项可以理解为：
+
+| 恢复选项 | 主要恢复对象 | 常见场景 |
+|---|---|---|
+| `Restore Files` | 网站文件 | 主题、插件、PHP、uploads、SQLite 文件损坏 |
+| `Restore Databases` | 数据库 | WordPress 文章、设置、用户、插件数据误改 |
+| `Restore Emails` | 邮箱 | 邮件误删或邮箱数据需要回滚 |
+| `Restore All Files and Databases` | 文件 + 数据库 | 整站严重故障，需要整体回退 |
+| `Download` | 下载恢复点 | 本地归档、迁移、异地灾备 |
+
+推荐形成下面的判断顺序：
+
+```text
+网站异常
+   ↓
+判断问题发生在哪一层
+   ↓
+文件？数据库？邮箱？
+   ↓
+选择最小恢复范围
+   ↓
+恢复
+   ↓
+前台 + 后台 + 数据完整性验收
+```
+
+核心原则：
+
+> **能局部恢复，就不要优先整体恢复。**
+
+因为整体恢复可能把备份时间点之后新增的文章、询盘、订单、用户数据或设置一起回退。
+
+对于 SQLite 项目尤其要注意：SQLite 数据库本身是文件，如果位于 `public_html` 内，通常属于文件备份 / 文件恢复范围，而不是 SiteGround 的 MySQL 数据库恢复范围。
+
+详细说明见：[SiteGround 网站完整备份指南](docs/siteground-backup-guide.md)。
+
+---
+
 ## 完整备份的基本原则
 
 ### WordPress / PHP + MySQL
@@ -163,6 +213,7 @@ public_html/database/app.sqlite
 → 验证
 → 下载
 → 保存
+→ 判断故障层
 → 恢复
 → 验收
 ```
@@ -173,6 +224,8 @@ public_html/database/app.sqlite
 知道备份在哪里
 知道里面有什么
 知道文件没有损坏
+知道什么时候该恢复文件
+知道什么时候该恢复数据库
 知道如何恢复
 知道恢复后如何验收
 ```
@@ -328,6 +381,7 @@ public_html/
 ```text
 能改名保留，就先不要删除
 能导入新数据库，就先不要覆盖旧数据库
+能局部恢复，就先不要整体恢复
 ```
 
 例如恢复源码时，优先：
@@ -428,6 +482,14 @@ PS C:\...>
 
 优先改名保留，确认恢复版本正常后再删除。
 
+### 为什么网站坏了不能直接点 `Restore All`？
+
+因为网站文件和数据库的更新时间可能不同。
+
+例如只是主题 PHP 文件改坏，但今天数据库中已经新增询盘，如果整体回退到昨天，文件虽然恢复了，今天新增的数据也可能一起被数据库回退。
+
+因此先判断故障层，再选择恢复范围。
+
 ---
 
 ## 安全规范
@@ -466,11 +528,21 @@ SMTP 密码
 ```text
 siteground-ssh-wordpress-guide/
 ├── README.md
-└── docs/
-    ├── ssh-wordpress-install.md
-    ├── siteground-backup-guide.md
-    ├── siteground-restore-guide.md
-    └── verified-command-log.md
+├── docs/
+│   ├── ssh-wordpress-install.md
+│   ├── siteground-backup-guide.md
+│   ├── siteground-restore-guide.md
+│   └── verified-command-log.md
+└── screenshots/
+    └── siteground-backup-restore-options.png
+```
+
+当前结构刻意保持简单：
+
+```text
+README.md       → 总览与导航
+docs/           → 详细运维文档
+screenshots/    → 与文档直接相关的实操截图
 ```
 
 后续如果内容继续增加，可以继续拆分：
@@ -520,6 +592,7 @@ SSH
 平台自动备份负责快速恢复
 手动备份负责关键节点
 本地完整备份负责灾备与迁移
+先判断故障层，再选择最小恢复范围
 恢复流程负责真正闭环
 实操记录负责以后快速复盘
 ```
@@ -527,3 +600,5 @@ SSH
 以及：
 
 > **备份的价值不在于“文件已经生成”，而在于“能够验证、能够下载、能够找到、必要时能够恢复”。**
+
+> **恢复的核心不是“恢复得越多越保险”，而是“准确判断故障层，只恢复真正需要恢复的数据”。**
